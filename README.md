@@ -1,67 +1,171 @@
-# Weather Service
+# Weather Report Service
 
-This project is a weather service application built with Python and FastAPI. It fetches weather data from the Open-Meteo API, stores it in a SQLite database, and provides endpoints to export the data as Excel or PDF reports.
+A FastAPI-based service that fetches time-series weather data from the Open-Meteo API and generates Excel files and PDF reports with charts.
+
+## Features
+
+- ✅ Fetch weather data from Open-Meteo MeteoSwiss API
+- ✅ Store data in SQLite database
+- ✅ REST API endpoints for data fetching and export
+- ✅ Excel export with weather data
+- ✅ PDF report generation with temperature and humidity charts
+- ✅ Proper error handling and logging
+- ✅ Clean project structure
 
 ## Project Structure
 
 ```
-weather-service/
+weather-report-service/
+├── app/
+│   ├── __init__.py
+│   ├── main.py              # FastAPI application and routes
+│   ├── models.py            # SQLAlchemy models
+│   ├── database.py          # Database configuration
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── weather_service.py    # Weather API integration
+│   │   └── export_service.py     # Excel and PDF export logic
+│   └── utils/
+│       ├── __init__.py
+│       └── config.py        # Configuration settings
+├── requirements.txt         # Python dependencies
 ├── README.md
-├── requirements.txt
-├── weather_data.xlsx
-├── weather.db
-└── app/
-    ├── __init__.py
-    ├── config.py
-    ├── database.py
-    ├── main.py
-    ├── models.py
-    ├── schemas.py
-    ├── services/
-    │   ├── export_service.py
-    │   └── weather_service.py
-    └── utils/
-        ├── chart_generator.py
-        ├── excel_generator.py
-        └── pdf_generator.py
+└── run.py                  # Application runner
 ```
 
-## Features
+## Installation & Setup
 
-- Fetches weather data (temperature and humidity) for a given latitude and longitude from Open-Meteo.
-- Stores weather data in a local SQLite database.
-- Exports weather data as Excel or PDF reports.
-- Generates charts for visual representation in reports.
+1. **Clone/Create the project directory:**
+   ```bash
+   mkdir weather-report-service
+   cd weather-report-service
+   ```
 
-## Installation
+2. **Create a virtual environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\\Scripts\\activate
+   ```
 
-1. Clone the repository and navigate to the project directory.
-2. Install the required dependencies:
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-    ```
-    pip install -r requirements.txt
-    ```
+4. **Run the application:**
+   ```bash
+   python run.py
+   ```
 
-## Usage
+   Or alternatively:
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
 
-1. Start the FastAPI server:
+## API Endpoints
 
-    ```
-    uvicorn app.main:app --reload
-    ```
+### 1. Fetch Weather Data
+```http
+GET /weather-report?lat={latitude}&lon={longitude}
+```
 
-2. Available endpoints:
-    - `GET /weather-report?lat={latitude}&lon={longitude}`  
-      Fetch and store weather data for the specified location.
-    - `GET /export/excel`  
-      Download the weather data as an Excel file.
-    - `GET /export/pdf`  
-      Download the weather report as a PDF file.
+**Example:**
+```bash
+curl "http://localhost:8000/weather-report?lat=47.37&lon=8.55"
+```
 
-## Configuration
+**Response:**
+```json
+{
+  "message": "Successfully fetched and stored 48 weather records"
+}
+```
 
-- API and database settings are in [`app/config.py`](app/config.py).
+### 2. Export to Excel
+```http
+GET /export/excel?lat={latitude}&lon={longitude}
+```
 
-## License
+**Example:**
+```bash
+curl -o weather_data.xlsx "http://localhost:8000/export/excel?lat=47.37&lon=8.55"
+```
 
-This project is licensed under the MIT License.
+Returns an Excel file with columns: `timestamp`, `temperature_2m`, `relative_humidity_2m`, `latitude`, `longitude`
+
+### 3. Export PDF Report
+```http
+GET /export/pdf?lat={latitude}&lon={longitude}
+```
+
+**Example:**
+```bash
+curl -o weather_report.pdf "http://localhost:8000/export/pdf?lat=47.37&lon=8.55"
+```
+
+Returns a PDF report with:
+- Title and metadata (location, date range)
+- Line charts showing temperature and humidity over time
+
+### 4. Health Check
+```http
+GET /health
+```
+
+### 5. API Documentation
+- Interactive docs: http://localhost:8000/docs
+- OpenAPI schema: http://localhost:8000/openapi.json
+
+## Usage Example
+
+1. **Start the server:**
+   ```bash
+   python run.py
+   ```
+
+2. **Fetch weather data for Zurich:**
+   ```bash
+   curl "http://localhost:8000/weather-report?lat=47.37&lon=8.55"
+   ```
+
+3. **Download Excel report:**
+   ```bash
+   curl -o zurich_weather.xlsx "http://localhost:8000/export/excel?lat=47.37&lon=8.55"
+   ```
+
+4. **Download PDF report:**
+   ```bash
+   curl -o zurich_weather.pdf "http://localhost:8000/export/pdf?lat=47.37&lon=8.55"
+   ```
+
+## Dependencies
+
+- **FastAPI**: Web framework for building APIs
+- **SQLAlchemy**: SQL toolkit and ORM
+- **pandas**: Data manipulation and analysis
+- **openpyxl**: Excel file generation
+- **matplotlib**: Chart generation
+- **weasyprint**: PDF generation
+- **httpx**: HTTP client for API calls
+
+## Features Implemented
+
+✅ **API Integration**: Fetches data from Open-Meteo MeteoSwiss API for past 2 days  
+✅ **Database Storage**: SQLite database with proper schema  
+✅ **REST API**: Clean FastAPI endpoints with proper error handling  
+✅ **Excel Export**: Generates .xlsx files with time-series data  
+✅ **PDF Reports**: Creates PDF with charts using matplotlib and weasyprint  
+✅ **Error Handling**: Comprehensive error handling and logging  
+✅ **Documentation**: Auto-generated API docs with FastAPI  
+
+## Notes
+
+- The service automatically fetches the last 2 days of weather data
+- Data is stored in SQLite database (`weather_data.db`)
+- Charts show temperature and humidity trends over time
+- Export endpoints support optional lat/lon filtering
+- All endpoints include proper error handling and logging
+
+## Testing the Service
+
+Visit http://localhost:8000/docs for interactive API documentation where you can test all endpoints directly from your browser.
