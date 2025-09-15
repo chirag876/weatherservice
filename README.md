@@ -168,4 +168,4 @@ GET /health
 
 ## Testing the Service
 
-Visit http://localhost:8000/docs for interactive API documentation where you can test all endpoints directly from your browser.
+Visit http://127.0.0.1:8000/docs for interactive API documentation where you can test all endpoints directly from your browser.
